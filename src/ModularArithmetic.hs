@@ -1,8 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 module ModularArithmetic where
 
-import Control.Monad (zipWithM)
-
 squareMultiply a p = xPow a p 1
   where
     xPow !a !p !y
@@ -23,8 +21,6 @@ modPow a p n = xPow a p 1
 legendreSymbol a p
   | (modPow a ((p - 1) `div` 2) p) > 1 = -1
   | otherwise                          = modPow a ((p - 1) `div` 2) p
-  -- a^((p - 1) `div` 2) `mod` p
-
 
 squareMod a n = modPow a ((n + 1) `div` 4) n
 
@@ -151,6 +147,67 @@ factorsTD x = f x [] 2
     divUntil a b
       | a `rem` b == 0 = divUntil (a `div` b) b
       | otherwise = a
+
+
+fermatFactorization n = (p, q)
+  where
+    x = root 2 n
+    y = (x * x) - n
+    p = iter x y
+    q = div n p
+    iter a b
+      | ((t * t) == b) = a - t
+      | otherwise   = iter (a+1) (v - n)
+      where
+        t = root 2 b
+        u = a + 1
+        v = u*u
+
+wienerAttack n e = forIn $ zip pks pds
+  where
+    canI = e > (root 3 n) * 2
+    (pks, pds) = convergents $ cfExpansion e n
+    forIn [] = (0, 0, 0, 0)
+    forIn ( (k, d) : cs)
+      | k == 0                    = forIn cs
+      | mod (e * d - 1) k /= 0    = forIn cs
+      | delta <= 0                = forIn cs
+      | dsq * dsq == delta 
+          && mod (dsq + s) 2 == 0 =
+            (d, phi, rootL, rootR)
+      | otherwise  = forIn cs
+      where
+        phi = div (e * d - 1) k
+        -- check if x^2 - s*x + n = 0
+        s = n - phi + 1
+        delta = s * s - 4 * n
+        dsq = root 2 delta
+        rootL = div (s - dsq) 2
+        rootR = div (s + dsq) 2
+
+-- https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3985315/
+-- https://web.math.pmf.unizg.hr/~duje/pdf/dujececc.pdf
+vvteAttack n e = forIn $ zip pks pds
+  where
+    canI = e > (root 3 n) * 2
+    (pks, pds) = convergents $ cfExpansion e (n + 1 - (2 * (root 2 n)))
+    forIn [] = (0, 0, 0, 0)
+    forIn ( (k, d) : cs)
+      | k == 0                    = forIn cs
+      | mod (e * d - 1) k /= 0    = forIn cs
+      | delta <= 0                = forIn cs
+      | dsq * dsq == delta 
+          && mod (dsq + s) 2 == 0 =
+            (d, phi, rootL, rootR)
+      | otherwise  = forIn cs
+      where
+        phi = div (e * d - 1) k
+        -- check if x^2 - s*x + n = 0
+        s = n - phi + 1
+        delta = s * s - 4 * n
+        dsq = root 2 delta
+        rootL = div (s - dsq) 2
+        rootR = div (s + dsq) 2
 
 
 -- totientN n = totient $ factors n

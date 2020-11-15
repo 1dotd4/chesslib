@@ -21,7 +21,7 @@ executable chesslib
   other-modules:
     ModularArithmetic
   -- other-extensions:
-  build-depends:       base >=4.12 && <4.13
+  build-depends:       base >=4.12 && <4.14
   hs-source-dirs:
     .
     src
